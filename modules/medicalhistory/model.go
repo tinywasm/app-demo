@@ -57,7 +57,7 @@ var weekdayAbbr = [7]string{"Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"} /
 var monthAbbr = [12]string{"Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"}
 
 // leadFromDate turns a "YYYY-MM-DD" date into the three-line badge
-// medicalhistory.go's targethour factory reads instead of a plain label —
+// medicalhistory.go's targetdate factory reads instead of a plain label —
 // e.g. "Vie" / "20" / "Jul 26" (month + the year's last 2 digits — the
 // reference this badge follows pairs the month with a short year, not the
 // day again). A date that fails to parse degrades to an empty badge rather

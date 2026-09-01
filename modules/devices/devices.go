@@ -76,6 +76,5 @@ func (m *Module) View() Component {
 			m.p.Notify(Msg.Success, "Eliminado "+id, platformd.Auto())
 		}
 	}
-	cv.OnCancel = func() { m.p.Notify(Msg.Info, "Cancelado", platformd.Auto()) }
 	return cv
 }

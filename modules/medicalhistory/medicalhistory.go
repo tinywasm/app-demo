@@ -10,7 +10,7 @@ package medicalhistory
 
 import (
 	"github.com/tinywasm/components/selectsearch"
-	"github.com/tinywasm/components/targethour"
+	"github.com/tinywasm/components/targetdate"
 	"github.com/tinywasm/layout/crudview"
 	"github.com/tinywasm/layout/platformd"
 	"github.com/tinywasm/model"
@@ -125,10 +125,10 @@ func (m *Module) View() Component {
 		IDs:       ids,
 		Filter:    picker,
 		// The fichas list leads with the visit's date (see Visit.Item's
-		// LeadTop/Main/Bottom) instead of a plain label — targethour reads
+		// LeadTop/Main/Bottom) instead of a plain label — targetdate reads
 		// that badge, targetlist (crudview's default) would just ignore it.
 		List: func(selected *SignalString, onSelect func(view.Item), onDelete func(string)) crudview.ListView {
-			return &targethour.TargetHour{Selected: selected, OnSelect: onSelect, OnDelete: onDelete}
+			return &targetdate.TargetDate{Selected: selected, OnSelect: onSelect, OnDelete: onDelete}
 		},
 	})
 	if err != nil {
@@ -145,6 +145,5 @@ func (m *Module) View() Component {
 			m.p.Notify(Msg.Success, "Eliminado "+id, platformd.Auto())
 		}
 	}
-	cv.OnCancel = func() { m.p.Notify(Msg.Info, "Cancelado", platformd.Auto()) }
 	return cv
 }

@@ -3,7 +3,8 @@ module github.com/tinywasm/app-demo
 go 1.25.2
 
 require (
-	github.com/tinywasm/components v0.5.23
+	github.com/tinywasm/components v0.5.30
+	github.com/tinywasm/css v0.4.18
 	github.com/tinywasm/dom v0.13.5
 	github.com/tinywasm/fmt v0.25.7
 	github.com/tinywasm/html v0.0.17
@@ -20,12 +21,11 @@ require (
 
 require (
 	github.com/tinywasm/color v0.1.1 // indirect
-	github.com/tinywasm/css v0.4.15 // indirect
 	github.com/tinywasm/font v0.0.4 // indirect
 	github.com/tinywasm/form v0.3.29 // indirect
 	github.com/tinywasm/json v0.5.23 // indirect
 	github.com/tinywasm/router v0.1.29 // indirect
-	github.com/tinywasm/widget v0.6.14 // indirect
+	github.com/tinywasm/widget v0.6.15 // indirect
 )
 
 replace github.com/tinywasm/layout => ../layout
