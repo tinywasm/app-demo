@@ -9,7 +9,7 @@ require (
 	github.com/tinywasm/html v0.0.17
 	github.com/tinywasm/input v0.0.3
 	github.com/tinywasm/layout v0.1.45
-	github.com/tinywasm/model v0.1.4
+	github.com/tinywasm/model v0.1.7
 	github.com/tinywasm/orm v0.11.10
 	github.com/tinywasm/storage v0.0.2
 	github.com/tinywasm/svg v0.3.0
@@ -24,8 +24,10 @@ require (
 	github.com/tinywasm/font v0.0.4 // indirect
 	github.com/tinywasm/form v0.3.29 // indirect
 	github.com/tinywasm/json v0.5.23 // indirect
-	github.com/tinywasm/router v0.1.27 // indirect
-	github.com/tinywasm/widget v0.6.12 // indirect
+	github.com/tinywasm/router v0.1.29 // indirect
+	github.com/tinywasm/widget v0.6.14 // indirect
 )
 
 replace github.com/tinywasm/layout => ../layout
+
+replace github.com/tinywasm/components => ../components
