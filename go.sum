@@ -26,8 +26,8 @@ github.com/tinywasm/storage v0.0.2 h1:2z2w6Vpy5057mtvXWzK79F4XslJBvQl6GqAm+Wacfy
 github.com/tinywasm/storage v0.0.2/go.mod h1:mF48cBANp2vWkgj2EbpurNY5QY4fYqpCTwbNaaLM5Ic=
 github.com/tinywasm/svg v0.3.0 h1:9UbQynNnV6ix5yzfFO+gknYGSgvLJVlW6E/JNQ9ljFw=
 github.com/tinywasm/svg v0.3.0/go.mod h1:hzq6bL+1AdSgE01nVOdHY2ATaI7fxDC3Ztt3Iw0p0sA=
-github.com/tinywasm/time v0.5.2 h1:9MixEPxbx3VOM1oWhnUhOrVL8UgI47bT2r1iOOCexO0=
-github.com/tinywasm/time v0.5.2/go.mod h1:6cHHubDVttZ1jBHeoz54bIZp70Gz9VdvXgenXB2+XFY=
+github.com/tinywasm/time v0.5.4 h1:nviU/+9lPVqHCG3Mm3HBsOf6gzqVMuLRNwSRRJ4q53c=
+github.com/tinywasm/time v0.5.4/go.mod h1:RABMkj8o9XWRqudww/2RWt/QQe25IzSS6kEG6z9S/Ro=
 github.com/tinywasm/unixid v0.2.26 h1:eU5VLSegyf9Np6dtbQssI5MVkU914cZyfTI4KnmAyOw=
 github.com/tinywasm/unixid v0.2.26/go.mod h1:wh1FAR4GDFpPoVcMiUQH2VYsIdxByEN44Rge3vTCo7k=
 github.com/tinywasm/view v0.1.17 h1:uQfrWFoWfiDlirav+P+IbVgz5Qi62VTwVXAOBuVXq0U=

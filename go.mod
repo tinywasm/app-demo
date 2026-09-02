@@ -14,7 +14,7 @@ require (
 	github.com/tinywasm/orm v0.11.10
 	github.com/tinywasm/storage v0.0.2
 	github.com/tinywasm/svg v0.3.0
-	github.com/tinywasm/time v0.5.2
+	github.com/tinywasm/time v0.5.4
 	github.com/tinywasm/unixid v0.2.26
 	github.com/tinywasm/view v0.1.17
 )
