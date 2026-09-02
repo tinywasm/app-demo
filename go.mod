@@ -11,7 +11,7 @@ require (
 	github.com/tinywasm/input v0.0.3
 	github.com/tinywasm/layout v0.1.45
 	github.com/tinywasm/model v0.1.7
-	github.com/tinywasm/orm v0.11.10
+	github.com/tinywasm/orm v0.12.0
 	github.com/tinywasm/storage v0.0.6
 	github.com/tinywasm/svg v0.3.0
 	github.com/tinywasm/time v0.5.4
