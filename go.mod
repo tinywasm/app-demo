@@ -3,7 +3,7 @@ module github.com/tinywasm/app-demo
 go 1.25.2
 
 require (
-	github.com/tinywasm/components v0.5.31
+	github.com/tinywasm/components v0.5.32
 	github.com/tinywasm/css v0.4.18
 	github.com/tinywasm/dom v0.13.5
 	github.com/tinywasm/fmt v0.25.7
@@ -31,7 +31,5 @@ require (
 replace github.com/tinywasm/layout => ../layout
 
 replace github.com/tinywasm/css => ../css
-
-replace github.com/tinywasm/components => ../components
 
 replace github.com/tinywasm/form => ../form
