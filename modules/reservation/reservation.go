@@ -34,6 +34,30 @@ func (p byDay) Filter(term string) []view.Item {
 	return items
 }
 
+// reservationDays feeds the calendar its selectable days. calendarslider makes
+// a day clickable ONLY if it has an Occupation entry (see buildDay:
+// `selectable := use >= 0`), so a bare calendar is inert — the user could
+// never pick a day and the list would never fill. One entry per day that has
+// at least one reservation; Percent is a rough booking-count bar (no map — a
+// linear scan over a handful of days is free and this file reaches WASM).
+func reservationDays() []calendarslider.OccupationDay {
+	var days []calendarslider.OccupationDay
+	_ = reservationDB.Query(&Reservation{}).ReadAll(
+		func() model.Model { return &Reservation{} },
+		func(m model.Model) {
+			d := m.(*Reservation).Day
+			for i := range days {
+				if days[i].Date == d {
+					days[i].Percent += 20
+					return
+				}
+			}
+			days = append(days, calendarslider.OccupationDay{Date: d, Percent: 20})
+		},
+	)
+	return days
+}
+
 func (p byDay) Save(recs ...model.Model) error {
 	if s, ok := p.Presenter.(view.Saver); ok {
 		return s.Save(recs...)
@@ -83,7 +107,7 @@ func (m *Module) View() Component {
 		view.WithDeleteOp("reservation_delete"),
 	)}
 
-	cal := &calendarslider.CalendarSlider{}
+	cal := &calendarslider.CalendarSlider{Occupation: reservationDays()}
 
 	ids, err := unixid.NewUnixID()
 	if err != nil {
