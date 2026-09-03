@@ -43,8 +43,8 @@ func newSeededDeviceDB() *orm.DB {
 }
 
 // memCaller adapts deviceDB (an *orm.DB over storage/mem) to router.Caller —
-// the seam view.Presenter drives. Device-specific (type-asserts *Device)
-// rather than generic: this is app/demo wiring, not a shared library.
+// the seam view.Presenter drives. Device-specific rather than generic: this is
+// app/demo wiring, not a shared library.
 type memCaller struct{ db *orm.DB }
 
 func (c *memCaller) Call(op string, args model.Encodable, into model.Decodable, done func(err error)) {
@@ -65,25 +65,138 @@ func (c *memCaller) Call(op string, args model.Encodable, into model.Decodable, 
 			}
 		}
 	case "device_save":
-		d, ok := args.(*Device)
-		if !ok {
-			err = Errf("memCaller: device_save: unexpected payload type")
+		// Plural contract: view ships saveArgs{records}, N=1 for the form's
+		// single save. deviceDB is unexported by design, so the wire is read
+		// through its encoding (see readArgs) — never asserted as *Device.
+		recs := readArgs(args).records
+		if len(recs) == 0 {
+			err = Errf("memCaller: device_save: empty records")
 			break
 		}
-		if findErr := c.db.Query(&Device{}).Where("id").Eq(d.Id).ReadOne(); findErr != nil {
-			err = c.db.Create(d) // no existing row with this id — new record
-		} else {
-			err = c.db.Update(d, storage.Eq("id", d.Id))
+		for _, d := range recs {
+			if err != nil {
+				break
+			}
+			if findErr := c.db.Query(&Device{}).Where("id").Eq(d.Id).ReadOne(); findErr != nil {
+				err = c.db.Create(d) // no existing row with this id — new record
+			} else {
+				err = c.db.Update(d, storage.Eq("id", d.Id))
+			}
+		}
+	case "device_update":
+		// Bulk field patch: only the named columns, across every id, one
+		// statement — the "ids + delta" contract. N=1 (a single-record bulk
+		// edit) arrives in the same shape as N=100.
+		a := readArgs(args)
+		switch {
+		case len(a.ids) == 0:
+			err = Errf("memCaller: device_update: empty ids")
+		case len(a.fields) == 0:
+			err = Errf("memCaller: device_update: empty fields")
+		case a.record == nil:
+			err = Errf("memCaller: device_update: missing record")
+		default:
+			anyIDs := make([]any, len(a.ids))
+			for i, id := range a.ids {
+				anyIDs[i] = id
+			}
+			err = c.db.UpdateFields(a.record, a.fields, storage.In("id", anyIDs))
 		}
 	case "device_delete":
-		d, ok := args.(*Device)
-		if !ok {
-			err = Errf("memCaller: device_delete: unexpected payload type")
+		ids := readArgs(args).ids
+		if len(ids) == 0 {
+			err = Errf("memCaller: device_delete: empty ids")
 			break
 		}
-		err = c.db.Delete(d, storage.Eq("id", d.Id))
+		anyIDs := make([]any, len(ids))
+		for i, id := range ids {
+			anyIDs[i] = id
+		}
+		// One statement for the whole batch: atomic by construction, no loop
+		// that could leave a half-applied delete behind.
+		err = c.db.Delete(&Device{}, storage.In("id", anyIDs))
 	}
 	done(err)
 }
 
 func (c *memCaller) Dispatch(op string, args model.Encodable) {}
+
+// readArgs walks a view payload's encoding. view wraps every write in an
+// unexported struct — saveArgs{records}, updateArgs{ids,fields,record},
+// deleteArgs{ids} — so the store cannot type-assert the payload; it reads the
+// wire instead. The record objects ARE this module's own *Device, passed
+// through by view untouched, so those are asserted (the store owns the type).
+func readArgs(args model.Encodable) *deviceArgs {
+	w := &deviceArgs{}
+	args.EncodeFields(w)
+	return w
+}
+
+type deviceArgs struct {
+	ids     []string  // update, delete
+	fields  []string  // update: which columns to write
+	records []*Device // save: N whole records
+	record  *Device   // update: the values carrier
+}
+
+func (*deviceArgs) String(string, string) {}
+func (*deviceArgs) Int(string, int64)     {}
+func (*deviceArgs) Float(string, float64) {}
+func (*deviceArgs) Bool(string, bool)     {}
+func (*deviceArgs) Bytes(string, []byte)  {}
+func (*deviceArgs) Null(string)           {}
+func (*deviceArgs) Raw(string, string)    {}
+
+func (w *deviceArgs) Object(name string, val model.Encodable) {
+	if name == "record" {
+		if d, ok := val.(*Device); ok {
+			w.record = d
+		}
+	}
+}
+
+func (w *deviceArgs) Array(name string, _ int) model.ArrayWriter {
+	switch name {
+	case "ids":
+		return (*stringSink)(&w.ids)
+	case "fields":
+		return (*stringSink)(&w.fields)
+	case "records":
+		return &deviceSink{w}
+	}
+	return discardSink{}
+}
+
+type stringSink []string
+
+func (s *stringSink) String(v string)       { *s = append(*s, v) }
+func (*stringSink) Int(int64)               {}
+func (*stringSink) Float(float64)           {}
+func (*stringSink) Bool(bool)               {}
+func (*stringSink) Bytes([]byte)            {}
+func (*stringSink) Object(model.Encodable)  {}
+func (*stringSink) Close()                  {}
+
+type deviceSink struct{ w *deviceArgs }
+
+func (deviceSink) String(string) {}
+func (deviceSink) Int(int64)     {}
+func (deviceSink) Float(float64) {}
+func (deviceSink) Bool(bool)     {}
+func (deviceSink) Bytes([]byte)  {}
+func (s deviceSink) Object(val model.Encodable) {
+	if d, ok := val.(*Device); ok {
+		s.w.records = append(s.w.records, d)
+	}
+}
+func (deviceSink) Close() {}
+
+type discardSink struct{}
+
+func (discardSink) String(string)          {}
+func (discardSink) Int(int64)              {}
+func (discardSink) Float(float64)          {}
+func (discardSink) Bool(bool)              {}
+func (discardSink) Bytes([]byte)           {}
+func (discardSink) Object(model.Encodable) {}
+func (discardSink) Close()                 {}

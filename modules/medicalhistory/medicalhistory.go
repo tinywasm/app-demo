@@ -51,17 +51,25 @@ func (p requirePatient) Filter(term string) []view.Item {
 	return items
 }
 
-// Save/Delete forward to the embedded Presenter explicitly: embedding an
-// INTERFACE only promotes the methods view.Presenter itself declares, never
+// Save/Update/Delete forward to the embedded Presenter explicitly: embedding
+// an INTERFACE only promotes the methods view.Presenter itself declares, never
 // extra ones a concrete value happens to also satisfy — view.New's return
-// value here always implements both (Config always sets WithSaveOp and
-// WithDeleteOp below), so the fallback errors are unreachable in practice,
-// not a real degraded mode.
+// value here always implements all three (Config always sets WithSaveOp,
+// WithUpdateOp and WithDeleteOp below), so the fallback errors are unreachable
+// in practice, not a real degraded mode. The var _ lines below are the
+// compile-time guard that each forward is present.
 func (p requirePatient) Save(recs ...model.Model) error {
 	if s, ok := p.Presenter.(view.Saver); ok {
 		return s.Save(recs...)
 	}
 	return Errf("requirePatient: underlying presenter cannot save")
+}
+
+func (p requirePatient) Update(ids []string, rec model.Model, fields []string) error {
+	if u, ok := p.Presenter.(view.Updater); ok {
+		return u.Update(ids, rec, fields)
+	}
+	return Errf("requirePatient: underlying presenter cannot update")
 }
 
 func (p requirePatient) Delete(ids ...string) error {
@@ -73,6 +81,7 @@ func (p requirePatient) Delete(ids ...string) error {
 
 var _ view.Presenter = requirePatient{}
 var _ view.Saver = requirePatient{}
+var _ view.Updater = requirePatient{}
 var _ view.Deleter = requirePatient{}
 
 const Icon = svg.Icon("mod-medicalhistory")
@@ -96,6 +105,7 @@ func (m *Module) View() Component {
 		func() model.ModelSlice { return &visitList{} },
 		view.WithTitle("Ficha Paciente"),
 		view.WithSaveOp("visit_save"),
+		view.WithUpdateOp("visit_update"),
 		view.WithDeleteOp("visit_delete"),
 	)}
 
@@ -147,6 +157,16 @@ func (m *Module) View() Component {
 		msg := "Eliminado " + ids[0]
 		if len(ids) != 1 {
 			msg = Sprintf("%d registros eliminados", len(ids))
+		}
+		m.p.Notify(Msg.Success, msg, platformd.Auto())
+	}
+	cv.OnUpdated = func(ids []string, err error) {
+		if err != nil || len(ids) == 0 {
+			return
+		}
+		msg := "Actualizado " + ids[0]
+		if len(ids) != 1 {
+			msg = Sprintf("%d registros actualizados", len(ids))
 		}
 		m.p.Notify(Msg.Success, msg, platformd.Auto())
 	}

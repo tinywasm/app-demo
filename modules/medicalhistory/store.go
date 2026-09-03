@@ -67,25 +67,134 @@ func (c *memCaller) Call(op string, args model.Encodable, into model.Decodable, 
 			}
 		}
 	case "visit_save":
-		v, ok := args.(*Visit)
-		if !ok {
-			err = Errf("memCaller: visit_save: unexpected payload type")
+		// Plural contract, mirrors devices' device_save: view ships
+		// saveArgs{records}, N=1 for the form's single save. The wire is read
+		// through its encoding (see readArgs), never asserted as *Visit.
+		recs := readArgs(args).records
+		if len(recs) == 0 {
+			err = Errf("memCaller: visit_save: empty records")
 			break
 		}
-		if findErr := c.db.Query(&Visit{}).Where("id").Eq(v.Id).ReadOne(); findErr != nil {
-			err = c.db.Create(v) // no existing row with this id — new record
-		} else {
-			err = c.db.Update(v, storage.Eq("id", v.Id))
+		for _, v := range recs {
+			if err != nil {
+				break
+			}
+			if findErr := c.db.Query(&Visit{}).Where("id").Eq(v.Id).ReadOne(); findErr != nil {
+				err = c.db.Create(v) // no existing row with this id — new record
+			} else {
+				err = c.db.Update(v, storage.Eq("id", v.Id))
+			}
+		}
+	case "visit_update":
+		// Bulk field patch, mirrors devices' device_update: only the named
+		// columns, across every id, one statement. N=1 arrives in the same
+		// shape as N=100.
+		a := readArgs(args)
+		switch {
+		case len(a.ids) == 0:
+			err = Errf("memCaller: visit_update: empty ids")
+		case len(a.fields) == 0:
+			err = Errf("memCaller: visit_update: empty fields")
+		case a.record == nil:
+			err = Errf("memCaller: visit_update: missing record")
+		default:
+			anyIDs := make([]any, len(a.ids))
+			for i, id := range a.ids {
+				anyIDs[i] = id
+			}
+			err = c.db.UpdateFields(a.record, a.fields, storage.In("id", anyIDs))
 		}
 	case "visit_delete":
-		v, ok := args.(*Visit)
-		if !ok {
-			err = Errf("memCaller: visit_delete: unexpected payload type")
+		ids := readArgs(args).ids
+		if len(ids) == 0 {
+			err = Errf("memCaller: visit_delete: empty ids")
 			break
 		}
-		err = c.db.Delete(v, storage.Eq("id", v.Id))
+		anyIDs := make([]any, len(ids))
+		for i, id := range ids {
+			anyIDs[i] = id
+		}
+		err = c.db.Delete(&Visit{}, storage.In("id", anyIDs))
 	}
 	done(err)
 }
 
 func (c *memCaller) Dispatch(op string, args model.Encodable) {}
+
+// readArgs walks a view payload's encoding. Mirrors devices' own — the demo
+// tier keeps one memCaller per module instead of sharing, so the walk lives
+// beside each use. See devices/store.go for why the wire is read, not asserted.
+func readArgs(args model.Encodable) *visitArgs {
+	w := &visitArgs{}
+	args.EncodeFields(w)
+	return w
+}
+
+type visitArgs struct {
+	ids     []string // update, delete
+	fields  []string // update: which columns to write
+	records []*Visit // save: N whole records
+	record  *Visit   // update: the values carrier
+}
+
+func (*visitArgs) String(string, string) {}
+func (*visitArgs) Int(string, int64)     {}
+func (*visitArgs) Float(string, float64) {}
+func (*visitArgs) Bool(string, bool)     {}
+func (*visitArgs) Bytes(string, []byte)  {}
+func (*visitArgs) Null(string)           {}
+func (*visitArgs) Raw(string, string)    {}
+
+func (w *visitArgs) Object(name string, val model.Encodable) {
+	if name == "record" {
+		if v, ok := val.(*Visit); ok {
+			w.record = v
+		}
+	}
+}
+
+func (w *visitArgs) Array(name string, _ int) model.ArrayWriter {
+	switch name {
+	case "ids":
+		return (*stringSink)(&w.ids)
+	case "fields":
+		return (*stringSink)(&w.fields)
+	case "records":
+		return &visitSink{w}
+	}
+	return discardSink{}
+}
+
+type stringSink []string
+
+func (s *stringSink) String(v string)      { *s = append(*s, v) }
+func (*stringSink) Int(int64)              {}
+func (*stringSink) Float(float64)          {}
+func (*stringSink) Bool(bool)              {}
+func (*stringSink) Bytes([]byte)           {}
+func (*stringSink) Object(model.Encodable) {}
+func (*stringSink) Close()                 {}
+
+type visitSink struct{ w *visitArgs }
+
+func (visitSink) String(string) {}
+func (visitSink) Int(int64)     {}
+func (visitSink) Float(float64) {}
+func (visitSink) Bool(bool)     {}
+func (visitSink) Bytes([]byte)  {}
+func (s visitSink) Object(val model.Encodable) {
+	if v, ok := val.(*Visit); ok {
+		s.w.records = append(s.w.records, v)
+	}
+}
+func (visitSink) Close() {}
+
+type discardSink struct{}
+
+func (discardSink) String(string)          {}
+func (discardSink) Int(int64)              {}
+func (discardSink) Bool(bool)              {}
+func (discardSink) Float(float64)          {}
+func (discardSink) Bytes([]byte)           {}
+func (discardSink) Object(model.Encodable) {}
+func (discardSink) Close()                 {}

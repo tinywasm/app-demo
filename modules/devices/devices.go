@@ -41,6 +41,7 @@ func (m *Module) View() Component {
 		func() model.ModelSlice { return &deviceList{} },
 		view.WithTitle("Computadores"),
 		view.WithSaveOp("device_save"),
+		view.WithUpdateOp("device_update"),
 		view.WithDeleteOp("device_delete"),
 	)
 	ids, err := unixid.NewUnixID()
@@ -80,6 +81,16 @@ func (m *Module) View() Component {
 		msg := "Eliminado " + ids[0]
 		if len(ids) != 1 {
 			msg = Sprintf("%d registros eliminados", len(ids))
+		}
+		m.p.Notify(Msg.Success, msg, platformd.Auto())
+	}
+	cv.OnUpdated = func(ids []string, err error) {
+		if err != nil || len(ids) == 0 {
+			return
+		}
+		msg := "Actualizado " + ids[0]
+		if len(ids) != 1 {
+			msg = Sprintf("%d registros actualizados", len(ids))
 		}
 		m.p.Notify(Msg.Success, msg, platformd.Auto())
 	}
