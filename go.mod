@@ -5,7 +5,7 @@ go 1.25.2
 require (
 	github.com/tinywasm/components v0.6.0
 	github.com/tinywasm/css v0.4.19
-	github.com/tinywasm/dom v0.13.5
+	github.com/tinywasm/dom v0.13.7
 	github.com/tinywasm/fmt v0.25.7
 	github.com/tinywasm/html v0.0.17
 	github.com/tinywasm/input v0.0.3
