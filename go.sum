@@ -32,5 +32,5 @@ github.com/tinywasm/unixid v0.2.26 h1:eU5VLSegyf9Np6dtbQssI5MVkU914cZyfTI4KnmAyO
 github.com/tinywasm/unixid v0.2.26/go.mod h1:wh1FAR4GDFpPoVcMiUQH2VYsIdxByEN44Rge3vTCo7k=
 github.com/tinywasm/view v0.2.1 h1:R5X1PIV6Bh2K/Yr/TrSl/ngtgSSxfxmDnA1DQUPDimk=
 github.com/tinywasm/view v0.2.1/go.mod h1:N0Q676oc0vX3c8O0Rhv87Ju9pMeN6dDtK0BOw6R8QcI=
-github.com/tinywasm/widget v0.6.19 h1:XmPuG3cyUIiegLp8a/jIzIl0Xk/8n9wqN18SOieXzZ0=
-github.com/tinywasm/widget v0.6.19/go.mod h1:61EMDNx/ExzRukDNjl8Am0olEcX+StbUeFs/kRAjLlo=
+github.com/tinywasm/widget v0.6.21 h1:nZql12XvUkrbt8fhGgHiSnb1TGLqnQXMkMWOxYHriTQ=
+github.com/tinywasm/widget v0.6.21/go.mod h1:N5/Jn8rjBPt51Sdes8E6F+WtqD7O9pvPgdzVVood4iY=

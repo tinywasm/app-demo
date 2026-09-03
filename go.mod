@@ -25,7 +25,7 @@ require (
 	github.com/tinywasm/form v0.4.0 // indirect
 	github.com/tinywasm/json v0.5.23 // indirect
 	github.com/tinywasm/router v0.1.30 // indirect
-	github.com/tinywasm/widget v0.6.19 // indirect
+	github.com/tinywasm/widget v0.6.21 // indirect
 )
 
 replace github.com/tinywasm/layout => ../layout
