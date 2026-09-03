@@ -69,12 +69,19 @@ func (m *Module) View() Component {
 			m.p.Notify(Msg.Success, "Guardado", platformd.Auto())
 		}
 	}
-	cv.OnDeleted = func(id string, err error) {
-		if err == nil {
-			// Éxito, no Error: la mutación se aplicó. El tipo informa de la
-			// severidad, no del verbo.
-			m.p.Notify(Msg.Success, "Eliminado "+id, platformd.Auto())
+	cv.OnDeleted = func(ids []string, err error) {
+		if err != nil || len(ids) == 0 {
+			return
 		}
+		// Éxito, no Error: la mutación se aplicó. El tipo informa de la
+		// severidad, no del verbo. N==1 nombra el registro (comportamiento de
+		// siempre); N>1 es el borrado masivo y no hay una lista de nombres que
+		// quepa en un toast, así que se informa el recuento.
+		msg := "Eliminado " + ids[0]
+		if len(ids) != 1 {
+			msg = Sprintf("%d registros eliminados", len(ids))
+		}
+		m.p.Notify(Msg.Success, msg, platformd.Auto())
 	}
 	return cv
 }

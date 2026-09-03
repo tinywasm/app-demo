@@ -57,16 +57,16 @@ func (p requirePatient) Filter(term string) []view.Item {
 // value here always implements both (Config always sets WithSaveOp and
 // WithDeleteOp below), so the fallback errors are unreachable in practice,
 // not a real degraded mode.
-func (p requirePatient) Save(payload model.Model) error {
+func (p requirePatient) Save(recs ...model.Model) error {
 	if s, ok := p.Presenter.(view.Saver); ok {
-		return s.Save(payload)
+		return s.Save(recs...)
 	}
 	return Errf("requirePatient: underlying presenter cannot save")
 }
 
-func (p requirePatient) Delete(id string) error {
+func (p requirePatient) Delete(ids ...string) error {
 	if d, ok := p.Presenter.(view.Deleter); ok {
-		return d.Delete(id)
+		return d.Delete(ids...)
 	}
 	return Errf("requirePatient: underlying presenter cannot delete")
 }
@@ -127,8 +127,8 @@ func (m *Module) View() Component {
 		// The fichas list leads with the visit's date (see Visit.Item's
 		// LeadTop/Main/Bottom) instead of a plain label — targetdate reads
 		// that badge, targetlist (crudview's default) would just ignore it.
-		List: func(selected *SignalString, onSelect func(view.Item), onDelete func(string)) crudview.ListView {
-			return &targetdate.TargetDate{Selected: selected, OnSelect: onSelect, OnDelete: onDelete}
+		List: func(selected *SignalString, onSelect func(view.Item)) crudview.ListView {
+			return &targetdate.TargetDate{Selected: selected, OnSelect: onSelect}
 		},
 	})
 	if err != nil {
@@ -140,10 +140,15 @@ func (m *Module) View() Component {
 			m.p.Notify(Msg.Success, "Guardado", platformd.Auto())
 		}
 	}
-	cv.OnDeleted = func(id string, err error) {
-		if err == nil {
-			m.p.Notify(Msg.Success, "Eliminado "+id, platformd.Auto())
+	cv.OnDeleted = func(ids []string, err error) {
+		if err != nil || len(ids) == 0 {
+			return
 		}
+		msg := "Eliminado " + ids[0]
+		if len(ids) != 1 {
+			msg = Sprintf("%d registros eliminados", len(ids))
+		}
+		m.p.Notify(Msg.Success, msg, platformd.Auto())
 	}
 	return cv
 }
