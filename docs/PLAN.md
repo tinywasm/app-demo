@@ -2,8 +2,9 @@
 PLAN: "feat: reservation module — calendar filter + targethour list"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 853638464225669385
+PR: https://github.com/tinywasm/app-demo/pull/1
 ---
 
 > This plan is dispatched via the CodeJob workflow. See skill: agents-workflow.
