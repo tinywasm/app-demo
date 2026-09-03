@@ -12,6 +12,7 @@ import (
 	"github.com/tinywasm/app-demo/modules/about"
 	"github.com/tinywasm/app-demo/modules/devices"
 	"github.com/tinywasm/app-demo/modules/medicalhistory"
+	"github.com/tinywasm/app-demo/modules/reservation"
 	_ "github.com/tinywasm/components/fieldset"
 	"github.com/tinywasm/layout/platformd"
 	"github.com/tinywasm/svg"
@@ -75,6 +76,7 @@ func main() {
 	p.Modules = []platformd.UIModule{
 		devices.New(p),
 		medicalhistory.New(p),
+		reservation.New(p),
 		about.New(),
 		hiddenModule{},
 	}

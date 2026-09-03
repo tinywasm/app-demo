@@ -21,6 +21,7 @@ require (
 
 require (
 	github.com/tinywasm/color v0.1.1 // indirect
+	github.com/tinywasm/date v0.0.2 // indirect
 	github.com/tinywasm/font v0.0.4 // indirect
 	github.com/tinywasm/form v0.4.0 // indirect
 	github.com/tinywasm/icons v0.0.2 // indirect
