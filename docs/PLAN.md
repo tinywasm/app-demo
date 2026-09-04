@@ -2,8 +2,9 @@
 PLAN: "refactor!: app-demo stores implement the typed view.Backend instead of faking router.Caller"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 15409905331598733492
+PR: https://github.com/tinywasm/app-demo/pull/2
 ---
 
 > This plan is dispatched via the CodeJob workflow. See skill: agents-workflow.
