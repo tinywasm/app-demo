@@ -101,21 +101,3 @@ func (v *Visit) Item() view.Item {
 
 var _ model.Model = (*Visit)(nil)
 var _ view.Itemizer = (*Visit)(nil)
-
-type visitList struct {
-	Items []*Visit
-}
-
-func (l *visitList) IsNil() bool                      { return l == nil }
-func (l *visitList) DecodeFields(r model.FieldReader) {}
-func (l *visitList) Schema() []model.Field            { return nil }
-func (l *visitList) Pointers() []any                  { return nil }
-func (l *visitList) Len() int                         { return len(l.Items) }
-func (l *visitList) At(i int) model.Fielder           { return l.Items[i] }
-func (l *visitList) Append() model.Fielder {
-	v := &Visit{}
-	l.Items = append(l.Items, v)
-	return v
-}
-
-var _ model.ModelSlice = (*visitList)(nil)

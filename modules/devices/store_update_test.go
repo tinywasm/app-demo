@@ -13,10 +13,7 @@ import (
 // exactly those ids, in one statement. N=1 and N>1 arrive in the same shape.
 func TestMemCallerBulkUpdatePatchesOnlyNamedFields(t *testing.T) {
 	db := newSeededDeviceDB()
-	pres := view.New(&memCaller{db: db}, &Device{}, "device_list",
-		func() model.ModelSlice { return &deviceList{} },
-		view.WithUpdateOp("device_update"),
-	)
+	pres := view.New(&deviceStore{db: db}, &Device{}, view.WithTitle("t"))
 	updater, ok := pres.(view.Updater)
 	if !ok {
 		t.Fatal("presenter must implement view.Updater")
@@ -60,10 +57,7 @@ func TestMemCallerBulkUpdatePatchesOnlyNamedFields(t *testing.T) {
 // disabled until there is something to apply, so this is a belt).
 func TestMemCallerBulkUpdateRejectsEmptyFields(t *testing.T) {
 	db := newSeededDeviceDB()
-	pres := view.New(&memCaller{db: db}, &Device{}, "device_list",
-		func() model.ModelSlice { return &deviceList{} },
-		view.WithUpdateOp("device_update"),
-	)
+	pres := view.New(&deviceStore{db: db}, &Device{}, view.WithTitle("t"))
 	updater := pres.(view.Updater)
 	if err := pres.Reload(); err != nil {
 		t.Fatalf("reload failed: %v", err)

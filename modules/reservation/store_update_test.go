@@ -10,10 +10,7 @@ import (
 
 func TestMemCallerBulkUpdatePatchesOnlyNamedFields(t *testing.T) {
 	db := newSeededReservationDB()
-	pres := view.New(&memCaller{db: db}, &Reservation{}, "reservation_list",
-		func() model.ModelSlice { return &reservationList{} },
-		view.WithUpdateOp("reservation_update"),
-	)
+	pres := view.New(&reservationStore{db: db}, &Reservation{}, view.WithTitle("t"))
 	updater, ok := pres.(view.Updater)
 	if !ok {
 		t.Fatal("presenter must implement view.Updater")
@@ -53,10 +50,7 @@ func TestMemCallerBulkUpdatePatchesOnlyNamedFields(t *testing.T) {
 
 func TestMemCallerBulkUpdateRejectsEmptyFields(t *testing.T) {
 	db := newSeededReservationDB()
-	pres := view.New(&memCaller{db: db}, &Reservation{}, "reservation_list",
-		func() model.ModelSlice { return &reservationList{} },
-		view.WithUpdateOp("reservation_update"),
-	)
+	pres := view.New(&reservationStore{db: db}, &Reservation{}, view.WithTitle("t"))
 	updater := pres.(view.Updater)
 	if err := pres.Reload(); err != nil {
 		t.Fatalf("reload failed: %v", err)

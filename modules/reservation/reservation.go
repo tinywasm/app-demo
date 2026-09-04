@@ -99,13 +99,7 @@ func (m *Module) Label() string     { return "Reserva Hora" }
 func (m *Module) Icon() svg.Icon    { return Icon }
 
 func (m *Module) View() Component {
-	pres := byDay{view.New(&memCaller{db: reservationDB}, &Reservation{}, "reservation_list",
-		func() model.ModelSlice { return &reservationList{} },
-		view.WithTitle("Reserva Hora"),
-		view.WithSaveOp("reservation_save"),
-		view.WithUpdateOp("reservation_update"),
-		view.WithDeleteOp("reservation_delete"),
-	)}
+	pres := byDay{view.New(&reservationStore{db: reservationDB}, &Reservation{}, view.WithTitle("Reserva Hora"))}
 
 	cal := &calendarslider.CalendarSlider{Occupation: reservationDays()}
 
