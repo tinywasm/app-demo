@@ -69,7 +69,7 @@ func (s *visitStore) List() ([]model.Model, error) {
 	return out, nil
 }
 
-func (s *visitStore) Save(recs []model.Model) error {
+func (s *visitStore) Save(recs ...model.Model) error {
 	if len(recs) == 0 {
 		return Errf("visitStore: save: empty records")
 	}
@@ -101,7 +101,7 @@ func (s *visitStore) Update(ids []string, rec model.Model, fields []string) erro
 	}
 }
 
-func (s *visitStore) Delete(ids []string) error {
+func (s *visitStore) Delete(ids ...string) error {
 	if len(ids) == 0 {
 		return Errf("visitStore: delete: empty ids")
 	}

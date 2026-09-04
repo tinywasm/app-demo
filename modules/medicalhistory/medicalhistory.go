@@ -54,8 +54,8 @@ func (p requirePatient) Filter(term string) []view.Item {
 // Save/Update/Delete forward to the embedded Presenter explicitly: embedding
 // an INTERFACE only promotes the methods view.Presenter itself declares, never
 // extra ones a concrete value happens to also satisfy — view.New's return
-// value here implements all three because visitStore implements BackendSaver,
-// BackendUpdater and BackendDeleter, so the fallback errors are unreachable
+// value here implements all three because visitStore implements view.Saver,
+// view.Updater and view.Deleter, so the fallback errors are unreachable
 // in practice, not a real degraded mode. The var _ lines below are the
 // compile-time guard that each forward is present.
 func (p requirePatient) Save(recs ...model.Model) error {

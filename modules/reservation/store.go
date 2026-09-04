@@ -46,7 +46,7 @@ func (s *reservationStore) List() ([]model.Model, error) {
 	return out, nil
 }
 
-func (s *reservationStore) Save(recs []model.Model) error {
+func (s *reservationStore) Save(recs ...model.Model) error {
 	if len(recs) == 0 {
 		return Errf("reservationStore: save: empty records")
 	}
@@ -78,7 +78,7 @@ func (s *reservationStore) Update(ids []string, rec model.Model, fields []string
 	}
 }
 
-func (s *reservationStore) Delete(ids []string) error {
+func (s *reservationStore) Delete(ids ...string) error {
 	if len(ids) == 0 {
 		return Errf("reservationStore: delete: empty ids")
 	}
