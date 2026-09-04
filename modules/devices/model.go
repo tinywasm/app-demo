@@ -47,21 +47,3 @@ func (d *Device) Item() view.Item {
 
 var _ model.Model = (*Device)(nil) // Verify compile-time implementation
 var _ view.Itemizer = (*Device)(nil)
-
-type deviceList struct {
-	Items []*Device
-}
-
-func (l *deviceList) IsNil() bool                      { return l == nil }
-func (l *deviceList) DecodeFields(r model.FieldReader) {}
-func (l *deviceList) Schema() []model.Field            { return nil }
-func (l *deviceList) Pointers() []any                  { return nil }
-func (l *deviceList) Len() int                         { return len(l.Items) }
-func (l *deviceList) At(i int) model.Fielder           { return l.Items[i] }
-func (l *deviceList) Append() model.Fielder {
-	d := &Device{}
-	l.Items = append(l.Items, d)
-	return d
-}
-
-var _ model.ModelSlice = (*deviceList)(nil)

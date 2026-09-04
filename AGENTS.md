@@ -21,7 +21,7 @@ Every module is the same four flat files (never a subfolder inside a module):
 |---|---|---|
 | `model.go` | the record struct, its field schema, the in-memory seed data | ~120 lines |
 | `<module>.go` | the wiring: `View()` builds the presenter + `crudview` and hooks its callbacks | ~100 lines |
-| `store.go` | the in-memory backend: one `switch op` over the CRUD operations | ~120 lines |
+| `store.go` | the in-memory backend implementing `view.Backend` (`List` + the `Save`/`Update`/`Delete` capabilities it supports) | ~120 lines |
 | `svg.go` | `//go:build !wasm`, the module's nav glyph | ~20 lines |
 
 `about/` is the minimal case (a static module: `about.go` + `svg.go`). `devices/`
@@ -44,13 +44,10 @@ boundary is a defect in the library, not in the consumer."*
 The demo must look like ordinary, boring Go. Concretely, in module code:
 
 - **No generics, no reflection, no `any`** except where a library signature
-  forces it at the I/O edge (`model.Encodable` in `store.go`'s `Call`).
+  forces it.
 - **Plain structs with explicit fields.** No builder chains of your own, no
   clever embedding to save a line.
-- **A `switch op string`** is how `store.go` dispatches — one `case` per
-  operation, each a handful of lines. If a `case` needs a helper, the helper is
-  a named function right below, not an inline closure three levels deep.
-- **Names say what they are.** `deviceDB`, `newSeededDeviceDB`, `memCaller` —
+- **Names say what they are.** `deviceDB`, `newSeededDeviceDB`, `deviceStore` —
   not `db`, `mk`, `c2`.
 - **Comments explain the framework touch-point**, not the Go. Assume the reader
   knows Go and does not know TinyWasm.
@@ -61,11 +58,11 @@ The demo must look like ordinary, boring Go. Concretely, in module code:
 
 - `model.go` never imports `dom` and never builds UI. It is the shape + the
   seed, nothing else.
-- `<module>.go` never touches storage. It builds `view.New(...)`,
+- `<module>.go` never touches storage. It builds `view.New(store, record, ...)`,
   `crudview.New(...)`, and wires `OnSaved`/`OnDeleted`/`OnUpdated` to
   `p.Notify(...)`. That is all `View()` does.
 - `store.go` never builds a `dom.Element`. It adapts the in-memory `orm.DB` to
-  the `router.Caller` seam the presenter drives.
+  the `view.Backend` seam the presenter drives.
 - `web/client.go` is the composition root: it constructs `platformd.Platform`
   and appends every module. Adding a module is **one line** here.
 
@@ -76,15 +73,6 @@ The demo must look like ordinary, boring Go. Concretely, in module code:
 If `devices`, `medicalhistory` and `reservation` all contain the *same* helper,
 that helper is missing from a library. The fix is upstream, not a shared file in
 this repo (`app-demo` is a leaf; it has nothing to share *to*).
-
-> **Known gap — the `store.go` payload walk.** `view` ships every write wrapped
-> in an unexported struct (`saveArgs{records}`, `updateArgs{ids,fields,record}`,
-> `deleteArgs{ids}`), so `store.go` cannot type-assert the payload — it walks
-> the `model.FieldWriter` encoding by hand (`readArgs` + the little sink types).
-> That block is currently near-identical in all three CRUD modules. It is
-> tracked for a `view` plan (expose the walk, or a typed accessor, in the
-> library). **Until that lands: copy the existing `readArgs` block verbatim
-> from `devices/store.go`. Do not invent a variant.**
 
 ---
 
@@ -106,8 +94,7 @@ this repo (`app-demo` is a leaf; it has nothing to share *to*).
 
 - **UI text in Spanish** — module labels, titles, toast messages, field
   placeholders (`"Buscar..."`, `"Guardado"`, `"Reserva Hora"`).
-- **Identifiers, types, operation strings in English** — `Device`, `deviceDB`,
-  `"device_save"`.
+- **Identifiers in English** — `Device`, `deviceDB`, `deviceStore`.
 - **Comments in Spanish** is fine here (the existing modules do it); keep them
   about the framework touch-point.
 

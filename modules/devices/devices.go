@@ -7,7 +7,6 @@ import (
 	"github.com/tinywasm/components/searchbar"
 	"github.com/tinywasm/layout/crudview"
 	"github.com/tinywasm/layout/platformd"
-	"github.com/tinywasm/model"
 	"github.com/tinywasm/svg"
 	"github.com/tinywasm/unixid"
 	"github.com/tinywasm/view"
@@ -37,13 +36,7 @@ func (m *Module) Label() string     { return "Computadores" }
 func (m *Module) Icon() svg.Icon    { return Icon }
 
 func (m *Module) View() Component {
-	pres := view.New(&memCaller{db: deviceDB}, &Device{}, "device_list",
-		func() model.ModelSlice { return &deviceList{} },
-		view.WithTitle("Computadores"),
-		view.WithSaveOp("device_save"),
-		view.WithUpdateOp("device_update"),
-		view.WithDeleteOp("device_delete"),
-	)
+	pres := view.New(&deviceStore{db: deviceDB}, &Device{}, view.WithTitle("Computadores"))
 	ids, err := unixid.NewUnixID()
 	if err != nil {
 		panic(err)

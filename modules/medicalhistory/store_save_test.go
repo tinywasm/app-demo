@@ -3,7 +3,6 @@ package medicalhistory
 import (
 	"testing"
 
-	"github.com/tinywasm/model"
 	"github.com/tinywasm/view"
 )
 
@@ -11,10 +10,7 @@ import (
 // store asserted *Visit but view ships saveArgs{records}. Now the wire is read.
 func TestMemCallerSaveThroughThePresenter(t *testing.T) {
 	db := newSeededVisitDB()
-	pres := requirePatient{view.New(&memCaller{db: db}, &Visit{}, "visit_list",
-		func() model.ModelSlice { return &visitList{} },
-		view.WithSaveOp("visit_save"),
-	)}
+	pres := requirePatient{view.New(&visitStore{db: db}, &Visit{}, view.WithTitle("t"))}
 
 	var saver view.Saver = pres
 	if err := pres.Reload(); err != nil {

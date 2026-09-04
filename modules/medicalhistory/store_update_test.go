@@ -13,10 +13,7 @@ import (
 // across exactly the given ids; N=1 and N>1 are the same shape.
 func TestMemCallerBulkUpdatePatchesOnlyNamedFields(t *testing.T) {
 	db := newSeededVisitDB()
-	pres := requirePatient{view.New(&memCaller{db: db}, &Visit{}, "visit_list",
-		func() model.ModelSlice { return &visitList{} },
-		view.WithUpdateOp("visit_update"),
-	)}
+	pres := requirePatient{view.New(&visitStore{db: db}, &Visit{}, view.WithTitle("t"))}
 
 	var updater view.Updater = pres // requirePatient satisfies it via the forward
 	if err := pres.Reload(); err != nil {

@@ -45,7 +45,7 @@ func (p requirePatient) Filter(term string) []view.Item {
 	)
 	items := make([]view.Item, len(rows))
 	for i, v := range rows {
-		// Newest first, same convention memCaller's visit_list uses.
+		// Newest first, same convention visitStore.List uses.
 		items[len(rows)-1-i] = v.Item()
 	}
 	return items
@@ -54,8 +54,8 @@ func (p requirePatient) Filter(term string) []view.Item {
 // Save/Update/Delete forward to the embedded Presenter explicitly: embedding
 // an INTERFACE only promotes the methods view.Presenter itself declares, never
 // extra ones a concrete value happens to also satisfy — view.New's return
-// value here always implements all three (Config always sets WithSaveOp,
-// WithUpdateOp and WithDeleteOp below), so the fallback errors are unreachable
+// value here implements all three because visitStore implements BackendSaver,
+// BackendUpdater and BackendDeleter, so the fallback errors are unreachable
 // in practice, not a real degraded mode. The var _ lines below are the
 // compile-time guard that each forward is present.
 func (p requirePatient) Save(recs ...model.Model) error {
@@ -101,13 +101,7 @@ func (m *Module) Label() string     { return "Historial Médico" }
 func (m *Module) Icon() svg.Icon    { return Icon }
 
 func (m *Module) View() Component {
-	pres := requirePatient{view.New(&memCaller{db: visitDB}, &Visit{}, "visit_list",
-		func() model.ModelSlice { return &visitList{} },
-		view.WithTitle("Ficha Paciente"),
-		view.WithSaveOp("visit_save"),
-		view.WithUpdateOp("visit_update"),
-		view.WithDeleteOp("visit_delete"),
-	)}
+	pres := requirePatient{view.New(&visitStore{db: visitDB}, &Visit{}, view.WithTitle("Ficha Paciente"))}
 
 	// The picker's ID IS the patient's name, not todayAgenda's opaque "p1"
 	// key: OnFilterChange's term reaches requirePatient.Filter(term) above,

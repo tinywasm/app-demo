@@ -81,21 +81,3 @@ func statusLabel(s string) string {
 
 var _ model.Model = (*Reservation)(nil)
 var _ view.Itemizer = (*Reservation)(nil)
-
-type reservationList struct {
-	Items []*Reservation
-}
-
-func (l *reservationList) IsNil() bool                      { return l == nil }
-func (l *reservationList) DecodeFields(r model.FieldReader) {}
-func (l *reservationList) Schema() []model.Field            { return nil }
-func (l *reservationList) Pointers() []any                  { return nil }
-func (l *reservationList) Len() int                         { return len(l.Items) }
-func (l *reservationList) At(i int) model.Fielder           { return l.Items[i] }
-func (l *reservationList) Append() model.Fielder {
-	r := &Reservation{}
-	l.Items = append(l.Items, r)
-	return r
-}
-
-var _ model.ModelSlice = (*reservationList)(nil)

@@ -3,7 +3,6 @@ package devices
 import (
 	"testing"
 
-	"github.com/tinywasm/model"
 	"github.com/tinywasm/view"
 )
 
@@ -12,10 +11,7 @@ import (
 // errored unheard and the "Guardado" toast never fired. Now the wire is read.
 func TestMemCallerSaveThroughThePresenter(t *testing.T) {
 	db := newSeededDeviceDB()
-	pres := view.New(&memCaller{db: db}, &Device{}, "device_list",
-		func() model.ModelSlice { return &deviceList{} },
-		view.WithSaveOp("device_save"),
-	)
+	pres := view.New(&deviceStore{db: db}, &Device{}, view.WithTitle("t"))
 	saver, ok := pres.(view.Saver)
 	if !ok {
 		t.Fatal("presenter must implement view.Saver")

@@ -13,10 +13,7 @@ import (
 // the old singular *Device payload and every delete errored unheard.
 func TestMemCallerBulkDeleteRemovesOnlyMarked(t *testing.T) {
 	db := newSeededDeviceDB()
-	pres := view.New(&memCaller{db: db}, &Device{}, "device_list",
-		func() model.ModelSlice { return &deviceList{} },
-		view.WithDeleteOp("device_delete"),
-	)
+	pres := view.New(&deviceStore{db: db}, &Device{}, view.WithTitle("t"))
 	deleter, ok := pres.(view.Deleter)
 	if !ok {
 		t.Fatal("presenter must implement view.Deleter")

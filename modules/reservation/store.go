@@ -28,143 +28,67 @@ func newSeededReservationDB() *orm.DB {
 	return db
 }
 
-type memCaller struct{ db *orm.DB }
+type reservationStore struct{ db *orm.DB }
 
-func (c *memCaller) Call(op string, args model.Encodable, into model.Decodable, done func(err error)) {
-	var err error
-	switch op {
-	case "reservation_list":
-		if rl, ok := into.(*reservationList); ok {
-			var rows []*Reservation
-			err = c.db.Query(&Reservation{}).ReadAll(
-				func() model.Model { return &Reservation{} },
-				func(m model.Model) { rows = append(rows, m.(*Reservation)) },
-			)
-			for i := len(rows) - 1; i >= 0 && err == nil; i-- {
-				dst := rl.Append().(*Reservation)
-				*dst = *rows[i]
-			}
-		}
-	case "reservation_save":
-		recs := readArgs(args).records
-		if len(recs) == 0 {
-			err = Errf("memCaller: reservation_save: empty records")
-			break
-		}
-		for _, r := range recs {
-			if err != nil {
-				break
-			}
-			if findErr := c.db.Query(&Reservation{}).Where("id").Eq(r.Id).ReadOne(); findErr != nil {
-				err = c.db.Create(r)
-			} else {
-				err = c.db.Update(r, storage.Eq("id", r.Id))
-			}
-		}
-	case "reservation_update":
-		a := readArgs(args)
-		switch {
-		case len(a.ids) == 0:
-			err = Errf("memCaller: reservation_update: empty ids")
-		case len(a.fields) == 0:
-			err = Errf("memCaller: reservation_update: empty fields")
-		case a.record == nil:
-			err = Errf("memCaller: reservation_update: missing record")
-		default:
-			anyIDs := make([]any, len(a.ids))
-			for i, id := range a.ids {
-				anyIDs[i] = id
-			}
-			err = c.db.UpdateFields(a.record, a.fields, storage.In("id", anyIDs))
-		}
-	case "reservation_delete":
-		ids := readArgs(args).ids
-		if len(ids) == 0 {
-			err = Errf("memCaller: reservation_delete: empty ids")
-			break
-		}
-		anyIDs := make([]any, len(ids))
-		for i, id := range ids {
-			anyIDs[i] = id
-		}
-		err = c.db.Delete(&Reservation{}, storage.In("id", anyIDs))
+func (s *reservationStore) List() ([]model.Model, error) {
+	var rows []*Reservation
+	err := s.db.Query(&Reservation{}).ReadAll(
+		func() model.Model { return &Reservation{} },
+		func(m model.Model) { rows = append(rows, m.(*Reservation)) },
+	)
+	if err != nil {
+		return nil, err
 	}
-	done(err)
+	out := make([]model.Model, 0, len(rows))
+	for i := len(rows) - 1; i >= 0; i-- {
+		out = append(out, rows[i])
+	}
+	return out, nil
 }
 
-func (c *memCaller) Dispatch(op string, args model.Encodable) {}
-
-func readArgs(args model.Encodable) *reservationArgs {
-	w := &reservationArgs{}
-	args.EncodeFields(w)
-	return w
-}
-
-type reservationArgs struct {
-	ids     []string
-	fields  []string
-	records []*Reservation
-	record  *Reservation
-}
-
-func (*reservationArgs) String(string, string) {}
-func (*reservationArgs) Int(string, int64)     {}
-func (*reservationArgs) Float(string, float64) {}
-func (*reservationArgs) Bool(string, bool)     {}
-func (*reservationArgs) Bytes(string, []byte)  {}
-func (*reservationArgs) Null(string)           {}
-func (*reservationArgs) Raw(string, string)    {}
-
-func (w *reservationArgs) Object(name string, val model.Encodable) {
-	if name == "record" {
-		if r, ok := val.(*Reservation); ok {
-			w.record = r
+func (s *reservationStore) Save(recs []model.Model) error {
+	if len(recs) == 0 {
+		return Errf("reservationStore: save: empty records")
+	}
+	for _, m := range recs {
+		r := m.(*Reservation)
+		if findErr := s.db.Query(&Reservation{}).Where("id").Eq(r.Id).ReadOne(); findErr != nil {
+			if err := s.db.Create(r); err != nil {
+				return err
+			}
+		} else {
+			if err := s.db.Update(r, storage.Eq("id", r.Id)); err != nil {
+				return err
+			}
 		}
+	}
+	return nil
+}
+
+func (s *reservationStore) Update(ids []string, rec model.Model, fields []string) error {
+	switch {
+	case len(ids) == 0:
+		return Errf("reservationStore: update: empty ids")
+	case len(fields) == 0:
+		return Errf("reservationStore: update: empty fields")
+	case model.IsNil(rec):
+		return Errf("reservationStore: update: missing record")
+	default:
+		return s.db.UpdateFields(rec, fields, storage.In("id", anyIDs(ids)))
 	}
 }
 
-func (w *reservationArgs) Array(name string, _ int) model.ArrayWriter {
-	switch name {
-	case "ids":
-		return (*stringSink)(&w.ids)
-	case "fields":
-		return (*stringSink)(&w.fields)
-	case "records":
-		return &reservationSink{w}
+func (s *reservationStore) Delete(ids []string) error {
+	if len(ids) == 0 {
+		return Errf("reservationStore: delete: empty ids")
 	}
-	return discardSink{}
+	return s.db.Delete(&Reservation{}, storage.In("id", anyIDs(ids)))
 }
 
-type stringSink []string
-
-func (s *stringSink) String(v string)       { *s = append(*s, v) }
-func (*stringSink) Int(int64)               {}
-func (*stringSink) Float(float64)           {}
-func (*stringSink) Bool(bool)               {}
-func (*stringSink) Bytes([]byte)            {}
-func (*stringSink) Object(model.Encodable)  {}
-func (*stringSink) Close()                  {}
-
-type reservationSink struct{ w *reservationArgs }
-
-func (reservationSink) String(string) {}
-func (reservationSink) Int(int64)     {}
-func (reservationSink) Float(float64) {}
-func (reservationSink) Bool(bool)     {}
-func (reservationSink) Bytes([]byte)  {}
-func (s reservationSink) Object(val model.Encodable) {
-	if r, ok := val.(*Reservation); ok {
-		s.w.records = append(s.w.records, r)
+func anyIDs(ids []string) []any {
+	out := make([]any, len(ids))
+	for i, id := range ids {
+		out[i] = id
 	}
+	return out
 }
-func (reservationSink) Close() {}
-
-type discardSink struct{}
-
-func (discardSink) String(string)          {}
-func (discardSink) Int(int64)              {}
-func (discardSink) Float(float64)          {}
-func (discardSink) Bool(bool)              {}
-func (discardSink) Bytes([]byte)           {}
-func (discardSink) Object(model.Encodable) {}
-func (discardSink) Close()                 {}

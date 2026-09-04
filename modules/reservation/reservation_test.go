@@ -5,14 +5,11 @@ package reservation
 import (
 	"testing"
 
-	"github.com/tinywasm/model"
 	"github.com/tinywasm/view"
 )
 
 func TestByDayFilter(t *testing.T) {
-	pres := byDay{view.New(&memCaller{db: reservationDB}, &Reservation{}, "reservation_list",
-		func() model.ModelSlice { return &reservationList{} },
-	)}
+	pres := byDay{view.New(&reservationStore{db: reservationDB}, &Reservation{}, view.WithTitle("t"))}
 
 	if items := pres.Filter(""); items != nil {
 		t.Fatalf("expected nil items for empty filter term, got %d items", len(items))

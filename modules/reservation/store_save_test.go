@@ -3,16 +3,12 @@ package reservation
 import (
 	"testing"
 
-	"github.com/tinywasm/model"
 	"github.com/tinywasm/view"
 )
 
 func TestMemCallerSaveThroughThePresenter(t *testing.T) {
 	db := newSeededReservationDB()
-	pres := view.New(&memCaller{db: db}, &Reservation{}, "reservation_list",
-		func() model.ModelSlice { return &reservationList{} },
-		view.WithSaveOp("reservation_save"),
-	)
+	pres := view.New(&reservationStore{db: db}, &Reservation{}, view.WithTitle("t"))
 	saver, ok := pres.(view.Saver)
 	if !ok {
 		t.Fatal("presenter must implement view.Saver")
