@@ -27,7 +27,7 @@ require (
 	github.com/tinywasm/icons v0.0.2 // indirect
 	github.com/tinywasm/json v0.5.23 // indirect
 	github.com/tinywasm/router v0.1.30 // indirect
-	github.com/tinywasm/widget v0.6.21 // indirect
+	github.com/tinywasm/widget v0.6.22 // indirect
 )
 
 // Local replaces for unreleased work: the daemon serves these live, so no
