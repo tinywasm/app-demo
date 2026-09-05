@@ -5,7 +5,7 @@ go 1.25.2
 require (
 	github.com/tinywasm/components v0.6.10
 	github.com/tinywasm/css v0.4.20
-	github.com/tinywasm/dom v0.13.8
+	github.com/tinywasm/dom v0.13.9
 	github.com/tinywasm/fmt v0.25.7
 	github.com/tinywasm/html v0.0.19
 	github.com/tinywasm/input v0.0.3
@@ -33,3 +33,8 @@ require (
 // Local replaces for unreleased work: the daemon serves these live, so no
 // publish is needed to verify in the running demo. Drop each line once its
 // repo is published past the change.
+replace github.com/tinywasm/components => ../components
+
+replace github.com/tinywasm/icons => ../icons
+
+replace github.com/tinywasm/layout => ../layout
