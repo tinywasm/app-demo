@@ -9,7 +9,7 @@ require (
 	github.com/tinywasm/fmt v0.25.7
 	github.com/tinywasm/html v0.0.19
 	github.com/tinywasm/input v0.0.3
-	github.com/tinywasm/layout v0.2.13
+	github.com/tinywasm/layout v0.2.14
 	github.com/tinywasm/model v0.1.7
 	github.com/tinywasm/orm v0.12.0
 	github.com/tinywasm/storage v0.0.6
@@ -35,5 +35,3 @@ require (
 // repo is published past the change.
 
 replace github.com/tinywasm/icons => ../icons
-
-replace github.com/tinywasm/layout => ../layout
